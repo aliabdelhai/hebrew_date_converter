@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <style>
+    .container {
+      font-family: 'Roboto';
+      width: 600px;
+      margin: 30px auto 0;
+      display: block;
+      background: #FFF;
+      padding: 10px 50px 50px;
+    }
+    .group {
+      position: relative;
+      margin-bottom: 45px;
+    }
+    input {
+      font-size: 18px;
+      padding: 10px 10px 10px 5px;
+      display: block;
+      width: 300px;
+      border: none;
+      border-bottom: 1px solid #757575;
+    }
+    input:focus {
+      outline: none;
+    }
+    label {
+      color: #999;
+      font-size: 18px;
+      font-weight: normal;
+      position: absolute;
+      pointer-events: none;
+      left: 5px;
+      top: 10px;
+      transition: 0.2s ease all;
+      -moz-transition: 0.2s ease all;
+      -webkit-transition: 0.2s ease all;
+    }
+    input:focus~label,
+    input:valid~label {
+      top: -20px;
+      font-size: 14px;
+      color: #5264AE;
+    }
+    h1 {
+      text-align: center;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+      width: 13em;
+      color: #7c795d;
+      font-family: 'Trocchi', serif;
+      font-size: 45px;
+      font-weight: normal;
+      line-height: 48px;
+    }
+    .subTitle {
+      font-size: 20px;
+      font-weight: 300;
+      color: #ffcc66;
+      text-align: center;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+      width: 25em;
+    }
+    .btn {
+      cursor: pointer;
+      color: #ecf0f1;
+      background-color: rgb(225, 65, 65);
+      padding: 10px;
+      border-radius: 3px;
+      font-size: 0.7em;
+      margin-top: 20px;
+    }
+    .results {
+      font-family: 'Roboto';
+      width: 600px;
+      margin: 5px auto 0;
+      color: blue;
+    }
+    .hebrewDate {
+      color: rgb(7, 7, 7);
+      font-size: 1.2em;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Hebrew Date Converter</h1>
+  <div class="subTitle">Insert Gregorian date</div>
+  <div class="container">
+    <div class="group">
+      <input type="text">
+      <span class="highlight"></span>
+      <span class="bar"></span>
+      <label>Gregorian Date</label>
+      <button class="btn">CONVERT</button>
+    </div>
+  </div>
+  <div class='results'></div>
+  <script>
+    function validatedate(date) {
+      let dateformat = /^(0?[1-9]|[12][0-9]|3[01])[\/\-\.](0?[1-9]|1[012])[\/\-\.]\d{4}$/;
+      let dd, mm, yy;
+      if (date.match(dateformat)) {
+        //Test which seperator is used '/' or '-' or '.'
+        let opera1 = date.split('/');
+        let opera2 = date.split('-');
+        let opera3 = date.split('.');
+        lopera1 = opera1.length;
+        lopera2 = opera2.length;
+        lopera3 = opera3.length;
+        // Extract the string into month, date and year
+        let pdate;
+        if (lopera1 > 1) {
+          pdate = date.split('/');
+        }
+        else if (lopera2 > 1) {
+          pdate = date.split('-');
+        } else {
+          pdate = date.split('.');
+        }
+        dd = parseInt(pdate[0]);
+        mm = parseInt(pdate[1]);
+        yy = parseInt(pdate[2]);
+        // Create list of days of a month [assume there is no leap year by default]
+        let ListofDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        if (mm == 1 || mm > 2) {
+          if (dd > ListofDays[mm - 1]) {
+            alert('Invalid date format!');
+            return false;
+          }
+        }
+        if (mm == 2) {
+          let lyear = false;
+          if ((!(yy % 4) && yy % 100) || !(yy % 400)) {
+            lyear = true;
+          }
+          if ((lyear == false) && (dd >= 29)) {
+            alert('Invalid date format!');
+            return false;
+          }
+          if ((lyear == true) && (dd > 29)) {
+            alert('Invalid date format!');
+            return false;
+          }
+        }
+      }
+      else {
+        alert("Invalid date format!");
+        return false;
+      }
+      return [dd, mm, yy]
+    }
+
+    $('button').on('click', async function () {
+      const inp = $('input').val();
+      if (validatedate(inp) == false) {
+        $('.results').empty().append(`<div>Invalid date</div>`)
+        return;
+      }
+      let [day, month, year] = validatedate(inp);
+      $.get(`https://www.hebcal.com/converter?cfg=json&gy=${year}&gm=${month}&gd=${day}&g2h=1`, function (data) {
+        const hebrewDay = data.hd
+        const hebrewMonth = data.hm
+        const hebrewYear = data.hy
+        $('.results').empty().append(`<div> <span class='hebrewDate'>Hebrew date:</span> <span>${data.hebrew}</span></div> 
+        <div><span class='hebrewDate'> English transliteration:</span> ${hebrewDay} of ${hebrewMonth}, ${hebrewYear}</span></div>`)
+      })
+    })
+  </script>
+</body>
+</html>
